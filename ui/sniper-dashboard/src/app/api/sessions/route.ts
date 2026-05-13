@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const LOOT_BASE_PATH = '/usr/share/sniper/loot/workspace';
-const SESSIONS_FILE = '/tmp/sniper_sessions.json';
+const LOOT_BASE_PATH = process.env.WORKSPACE_PATH || process.env.LOOT_PATH ? 
+  path.join(process.env.LOOT_PATH || '/usr/share/sniper/loot', 'workspace') : 
+  '/usr/share/sniper/loot/workspace';
+const SESSIONS_FILE = process.env.SESSIONS_FILE || '/tmp/sniper_sessions.json';
 
 interface ScanSession {
   id: string;

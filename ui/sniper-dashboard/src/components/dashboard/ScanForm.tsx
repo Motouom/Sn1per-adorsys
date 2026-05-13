@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Search, Loader2, Terminal, X, Play, AlertCircle, CheckCircle2, Bug, ArrowDown } from 'lucide-react';
+import { Search, Loader2, Terminal, X, Play, AlertCircle, CheckCircle2, ArrowDown } from 'lucide-react';
 
 export interface ScanStatus {
   stage: string;
@@ -41,7 +41,6 @@ export function ScanForm({ onScanStart, onScanOutput, onScanComplete, isScanning
   const [target, setTarget] = useState('');
   const [mode, setMode] = useState('normal');
   const [error, setError] = useState<string | null>(null);
-  const [debug, setDebug] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +64,7 @@ export function ScanForm({ onScanStart, onScanOutput, onScanComplete, isScanning
     
     console.log('%c══════════════════════════════════════════════════════════════', 'color: #ff4444');
     console.log(`%c[SNIPER SCAN STARTED]`, 'color: #00ff00; font-weight: bold; font-size: 14px');
-    console.log(`%cTarget: ${trimmedTarget} | Mode: ${mode} | Debug: ${debug}`, 'color: #00aaff');
+    console.log(`%cTarget: ${trimmedTarget} | Mode: ${mode}`, 'color: #00aaff');
     console.log('%c══════════════════════════════════════════════════════════════', 'color: #ff4444');
     
     onScanStart(trimmedTarget, mode);
@@ -76,11 +75,10 @@ export function ScanForm({ onScanStart, onScanOutput, onScanComplete, isScanning
       const response = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: trimmedTarget, mode, type: 'webapp', debug }),
+        body: JSON.stringify({ target: trimmedTarget, mode, type: 'webapp' }),
       });
 
       console.log('[FRONTEND] Response status:', response.status);
-      console.log('[FRONTEND] Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errData = await response.json();
@@ -111,7 +109,6 @@ export function ScanForm({ onScanStart, onScanOutput, onScanComplete, isScanning
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        console.log('[FRONTEND] Received chunk:', chunk.substring(0, 100) + '...');
         buffer += chunk;
         const lines = buffer.split('\n\n');
         buffer = lines.pop() || '';
@@ -125,15 +122,11 @@ export function ScanForm({ onScanStart, onScanOutput, onScanComplete, isScanning
               const data = JSON.parse(jsonStr) as ScanOutput;
               eventCount++;
               
-              // Log to browser console based on type
               const timestamp = new Date(data.timestamp).toLocaleTimeString();
               
               switch (data.type) {
                 case 'start':
                   console.log('%c[SCAN START]', 'color: #00ff00; font-weight: bold', data);
-                  if (data.simulation) {
-                    console.log('%c[!] Running in SIMULATION mode - sniper requires root access', 'color: #ffaa00');
-                  }
                   break;
                 case 'output':
                   console.log(`%c[${timestamp}]`, 'color: #888888', data.line || '');
@@ -249,21 +242,6 @@ export function ScanForm({ onScanStart, onScanOutput, onScanComplete, isScanning
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-xs sm:text-sm cursor-pointer hover:opacity-80 transition-opacity">
-              <input
-                type="checkbox"
-                checked={debug}
-                onChange={(e) => setDebug(e.target.checked)}
-                className="rounded border-border w-4 h-4"
-                disabled={isScanning}
-              />
-              <Bug className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
-              <span>Debug/Simulation Mode</span>
-            </label>
-            <span className="text-xs text-muted-foreground hidden sm:inline">(Use if sniper requires root access)</span>
-          </div>
-
           {error && (
             <div className="flex items-center gap-2 text-red-500 text-xs sm:text-sm animate-shake">
               <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -358,8 +336,6 @@ export function ScanOutputPanel({ outputs, status, isScanning, onClear }: ScanOu
     return true;
   });
 
-  const isSimulation = outputs.some(o => o.simulation);
-
   const stageLabels: Record<string, string> = {
     discovery: 'Host Discovery',
     tcp_scan: 'TCP Port Scan',
@@ -382,9 +358,6 @@ export function ScanOutputPanel({ outputs, status, isScanning, onClear }: ScanOu
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
           <CardTitle className="text-base sm:text-lg">Real-time Scan Output</CardTitle>
-          {isSimulation && (
-            <Badge variant="warning" size="sm">SIMULATION</Badge>
-          )}
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
           {status && (

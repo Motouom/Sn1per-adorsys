@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const SNIPER_PATH = '/usr/share/sniper/sniper';
+const SNIPER_PATH = process.env.SNIPER_PATH || '/usr/share/sniper/sniper';
 
 interface ScanStatus {
   stage: string;
@@ -93,143 +93,14 @@ function getModeArgs(mode: string, target: string): string[] {
   }
 }
 
-async function runSimulationScan(target: string, mode: string, controller: ReadableStreamDefaultController, encoder: TextEncoder) {
-  let isClosed = false;
-  
-  const sendEvent = (data: object): boolean => {
-    if (isClosed) return false;
-    try {
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-      return true;
-    } catch (e: any) {
-      if (e.code === 'ERR_INVALID_STATE') {
-        isClosed = true;
-        console.log('[SCAN API] Stream closed by client');
-      } else {
-        console.error('[SCAN API] Error sending event:', e);
-      }
-      return false;
-    }
-  };
-
-  if (!sendEvent({ type: 'start', target, mode, timestamp: new Date().toISOString(), simulation: true })) {
-    return;
-  }
-
-  const simulationOutput = [
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '    ____               ', stage: 'discovery', progress: 10 },
-    { delay: 300, line: ' _________  /  _/___  ___  _____' },
-    { delay: 300, line: '/ ___/ __ \\ / // __ \\/ _ \\/ ___/' },
-    { delay: 300, line: '(__  ) / / // // /_/ /  __/ /' },
-    { delay: 300, line: '/____/_/ /_/___/ .___/\\___/_/' },
-    { delay: 300, line: '               /_/' },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] Sn1per Security Scanner v9.0', stage: 'init', progress: 15 },
-    { delay: 300, line: '[+] Target: ' + target },
-    { delay: 300, line: '[+] Mode: ' + mode },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] GATHERING DNS INFO', stage: 'dns', progress: 20 },
-    { delay: 500, line: '[+] DNS Record: A ' + target + ' -> 192.168.1.1' },
-    { delay: 300, line: '[+] DNS Record: MX ' + target + ' -> mail.' + target },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] RUNNING PORT SCAN', stage: 'portscan', progress: 30 },
-    { delay: 500, line: 'Starting Nmap scan...' },
-    { delay: 300, line: 'PORT     STATE SERVICE' },
-    { delay: 200, line: '22/tcp   open  ssh' },
-    { delay: 200, line: '80/tcp   open  http' },
-    { delay: 200, line: '443/tcp  open  https' },
-    { delay: 200, line: '3306/tcp open  mysql' },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] RUNNING WEB SCAN', stage: 'webscan', progress: 50 },
-    { delay: 300, line: '[+] HTTP Headers:' },
-    { delay: 200, line: '  Server: nginx/1.18.0' },
-    { delay: 200, line: '  X-Frame-Options: SAMEORIGIN' },
-    { delay: 200, line: '  Content-Type: text/html' },
-    { delay: 500, line: '[+] Technologies detected:' },
-    { delay: 200, line: '  [+] React 18.2.0' },
-    { delay: 200, line: '  [+] nginx 1.18.0' },
-    { delay: 200, line: '  [+] PHP 8.1' },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] RUNNING VULNERABILITY SCAN', stage: 'vulnscan', progress: 70 },
-    { delay: 300, line: '[+] CVE-2021-44228 - Apache Log4j Remote Code Execution (CRITICAL)' },
-    { delay: 200, line: '[+] CVE-2022-22965 - Spring4Shell RCE (HIGH)' },
-    { delay: 200, line: '[+] XSS vulnerability detected in search parameter (MEDIUM)' },
-    { delay: 200, line: '[+] SSL Certificate expires in 30 days (INFO)' },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] RUNNING OSINT SCAN', stage: 'osint', progress: 85 },
-    { delay: 300, line: '[+] Found 5 email addresses' },
-    { delay: 200, line: '[+] Found 3 subdomains' },
-    { delay: 200, line: '[+] Found 2 social media profiles' },
-    { delay: 500, line: '=====================================================================================' },
-    { delay: 300, line: '[+] SCAN COMPLETE', stage: 'complete', progress: 100 },
-    { delay: 200, line: '[+] Total vulnerabilities found: 4' },
-    { delay: 200, line: '[+] Critical: 1 | High: 1 | Medium: 1 | Info: 1' },
-    { delay: 500, line: '=====================================================================================' },
-  ];
-
-  let lineCount = 0;
-  
-  for (const item of simulationOutput) {
-    if (isClosed) {
-      console.log('[SCAN API] Simulation stopped - stream closed');
-      return;
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, item.delay));
-    
-    if (isClosed) return;
-    
-    lineCount++;
-    
-    if (!sendEvent({ 
-      type: 'output', 
-      line: item.line,
-      lineNumber: lineCount,
-      timestamp: new Date().toISOString()
-    })) {
-      return;
-    }
-    
-    if (item.stage && item.progress !== undefined) {
-      if (!sendEvent({ 
-        type: 'status', 
-        stage: item.stage,
-        progress: item.progress,
-        message: item.line,
-        timestamp: new Date().toISOString()
-      })) {
-        return;
-      }
-    }
-  }
-
-  if (!isClosed) {
-    sendEvent({ 
-      type: 'complete', 
-      code: 0, 
-      target,
-      totalLines: lineCount,
-      timestamp: new Date().toISOString(),
-      simulation: true
-    });
-    
-    try {
-      controller.close();
-    } catch (e) {
-      // Controller already closed
-    }
-  }
-}
-
 export async function POST(request: NextRequest) {
   console.log('[SCAN API] Received scan request');
   
   try {
     const body = await request.json();
-    const { target, mode = 'normal', type = 'webapp', debug = false } = body;
+    const { target, mode = 'normal', type = 'webapp' } = body;
 
-    console.log('[SCAN API] Target:', target, 'Mode:', mode, 'Type:', type, 'Debug:', debug);
+    console.log('[SCAN API] Target:', target, 'Mode:', mode, 'Type:', type);
 
     if (!target) {
       console.log('[SCAN API] Error: Target is required');
@@ -252,15 +123,6 @@ export async function POST(request: NextRequest) {
     }
 
     const encoder = new TextEncoder();
-    
-    // Check if we can run sniper (needs sudo without password)
-    const canRunSniper = await checkSniperAccess();
-    console.log('[SCAN API] Can run sniper:', canRunSniper);
-    
-    // Use simulation mode if sniper can't be run or debug is requested
-    const useSimulation = debug || !canRunSniper;
-    
-    console.log('[SCAN API] Using simulation:', useSimulation);
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -279,13 +141,7 @@ export async function POST(request: NextRequest) {
           }
         };
 
-        if (useSimulation) {
-          console.log('[SCAN API] Running simulation scan');
-          await runSimulationScan(target, mode, controller, encoder);
-          return;
-        }
-
-        console.log('[SCAN API] Starting real sniper scan');
+        console.log('[SCAN API] Starting sniper scan');
         sendEvent({ type: 'start', target, mode, timestamp: new Date().toISOString() });
 
         const { spawn } = await import('child_process');
@@ -297,7 +153,6 @@ export async function POST(request: NextRequest) {
           env: { ...process.env, TERM: 'xterm' },
         });
 
-        let outputBuffer: string[] = [];
         let lineCount = 0;
 
         sniper.stdout.on('data', (data: Buffer) => {
@@ -309,7 +164,6 @@ export async function POST(request: NextRequest) {
           for (const line of lines) {
             if (line.trim()) {
               lineCount++;
-              outputBuffer.push(line);
               
               sendEvent({ 
                 type: 'output', 
@@ -365,16 +219,19 @@ export async function POST(request: NextRequest) {
             sendEvent({ 
               type: 'error', 
               error: err.message,
-              line: 'Failed to start sniper: ' + err.message,
+              line: 'Failed to start sniper: ' + err.message + '. Make sure sniper is installed and sudo is configured.',
               timestamp: new Date().toISOString()
             });
-            
             sendEvent({ 
-              type: 'output',
-              line: '[!] Falling back to simulation mode...',
+              type: 'complete', 
+              code: 1, 
+              target,
+              totalLines: lineCount,
               timestamp: new Date().toISOString()
             });
-            runSimulationScan(target, mode, controller, encoder);
+            try {
+              controller.close();
+            } catch (e) {}
           }
         });
       },
@@ -394,19 +251,5 @@ export async function POST(request: NextRequest) {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
-  }
-}
-
-async function checkSniperAccess(): Promise<boolean> {
-  const { exec } = await import('child_process');
-  const { promisify } = await import('util');
-  const execAsync = promisify(exec);
-  
-  try {
-    // Check if we can run sudo sniper without password
-    await execAsync('sudo -n ' + SNIPER_PATH + ' -h 2>&1', { timeout: 2000 });
-    return true;
-  } catch {
-    return false;
   }
 }

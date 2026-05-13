@@ -85,7 +85,7 @@ set -e\n\
 service postgresql start 2>/dev/null || true\n\
 msfdb reinit 2>/dev/null || true\n\
 \n\
-# Start the Sniper UI\n\
+# Start the Sniper UI on port 3004\n\
 cd /usr/share/sniper/ui/sniper-dashboard\n\
 npm run start &\n\
 \n\

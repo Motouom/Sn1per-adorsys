@@ -12,19 +12,41 @@ Professional penetration testing framework with a modern web interface for compr
 
 ## Quick Start
 
-### Step 1: Install Sniper
+### Option 1: Docker (Recommended)
+
+The easiest way to get started - everything is pre-configured and self-contained.
 
 ```bash
 # Clone the repository
-git clone https://github.com/1N3/Sn1per.git
-cd Sn1per
+git clone https://github.com/Motouom/Sn1per-adorsys.git
+cd Sn1per-adorsys
+
+# Start with Docker Compose
+docker-compose up -d --build
+
+# Access the UI
+# Web UI: http://localhost:3004
+# PostgreSQL: localhost:5433
+# Redis: localhost:6379
+```
+
+### Option 2: Local Installation
+
+For development or systems where you want direct access to tools.
+
+#### Step 1: Install Sniper
+
+```bash
+# Clone the repository
+git clone https://github.com/Motouom/Sn1per-adorsys.git
+cd Sn1per-adorsys
 
 # Run the setup script (installs all dependencies)
 chmod +x setup.sh
 sudo ./setup.sh
 ```
 
-### Step 2: Configure Sudo (REQUIRED for Real Scans)
+#### Step 2: Configure Sudo (REQUIRED for Real Scans)
 
 **Automatic method (recommended):**
 ```bash
@@ -43,42 +65,72 @@ sudo visudo
 your_username ALL=(ALL) NOPASSWD: /usr/share/sniper/sniper *
 ```
 
-### Step 3: Start the Web UI
+#### Step 3: Configure Environment
 
 ```bash
-cd /usr/share/sniper/ui/sniper-dashboard
-npm run dev -- -p 3004
+# Copy the example environment file
+cd ui/sniper-dashboard
+cp .env.example .env.local
 
-# Or use Docker
-docker-compose up -d
+# Edit for your system (if paths differ from defaults)
+nano .env.local
 ```
 
-**Access:** http://localhost:3004
-
-## Sudo Configuration Details
-
-Sniper requires root access for security tools (nmap, nikto, etc.). Without sudo configuration, scans will run in **Simulation Mode**.
-
-### Verify Sudo is Working
+#### Step 4: Start the Web UI
 
 ```bash
-# Should NOT ask for password
-sudo -n /usr/share/sniper/sniper -h
+cd ui/sniper-dashboard
+npm install
+npm run dev
+# UI runs on http://localhost:3004 by default
 ```
 
-### Remove Sudo Configuration
+## Ports Configuration
 
-```bash
-sudo rm /etc/sudoers.d/sniper
+| Service | Port |
+|---------|------|
+| Web UI (Next.js) | 3004 |
+| PostgreSQL | 5433 |
+| Redis | 6379 |
+| Selenium | 4444 |
+
+All ports can be changed via environment variables:
+
+```env
+PORT=3004
+POSTGRES_PORT=5433
 ```
 
-### Troubleshooting
+## Environment Variables
 
-If you see "sudo: a password is required":
-1. Run `sudo ./setup-sudo.sh`
-2. Log out and back in
-3. Verify with `sudo -n /usr/share/sniper/sniper -h`
-4. Or use **Debug/Simulation Mode** in the UI
+Create a `.env.local` file in `ui/sniper-dashboard/` with:
+
+```env
+# Server Configuration
+PORT=3004
+
+# Sniper Paths (change if installed elsewhere)
+SNIPER_PATH=/usr/share/sniper/sniper
+LOOT_PATH=/usr/share/sniper/loot
+WORKSPACE_PATH=/usr/share/sniper/loot/workspace
+
+# Database Configuration
+DATABASE_URL=postgresql://sniper:sniper@localhost:5433/sniper
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5433
+POSTGRES_USER=sniper
+POSTGRES_PASSWORD=sniper
+POSTGRES_DB=sniper
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+
+# API Keys (Add your own)
+SHODAN_API_KEY=
+CENSYS_APP_ID=
+CENSYS_API_SECRET=
+VIRUSTOTAL_API_KEY=
+```
 
 ## System Requirements
 
@@ -172,15 +224,6 @@ WAFWOOF="1"
 # etc.
 ```
 
-### UI Configuration
-
-The UI settings are in `/usr/share/sniper/ui/sniper-dashboard/.env`:
-
-```env
-SNIPER_PATH=/usr/share/sniper/sniper
-LOOT_PATH=/usr/share/sniper/loot
-```
-
 ## Troubleshooting
 
 ### "sudo: a password is required"
@@ -218,7 +261,17 @@ Check if sniper can run:
 sudo -n /usr/share/sniper/sniper -h
 ```
 
-If it asks for password, fix sudoers. Otherwise, enable **Debug/Simulation Mode** in the UI.
+If it asks for password, fix sudoers.
+
+### Build errors (MODULE_NOT_FOUND)
+
+Clear the cache and rebuild:
+
+```bash
+cd ui/sniper-dashboard
+rm -rf .next
+npm run build
+```
 
 ## Project Structure
 
@@ -237,6 +290,7 @@ Sn1per/
 │       │   ├── app/        # Pages and API routes
 │       │   ├── components/ # React components
 │       │   └── types/      # TypeScript definitions
+│       ├── .env.example    # Environment template
 │       └── package.json
 ├── Dockerfile          # Docker image definition
 ├── docker-compose.yml  # Docker orchestration
@@ -262,7 +316,7 @@ Sn1per/
 - Never run scans against targets you don't own or have permission to test
 - The platform requires root/sudo access for security tools
 - API keys are stored in plaintext - protect your configuration
-- Session data is stored in `/tmp/sniper-sessions.json`
+- Session data is stored in `/tmp/sniper_sessions.json`
 
 ## Contributing
 

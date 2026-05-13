@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const LOOT_BASE_PATH = '/usr/share/sniper/loot/workspace';
+const LOOT_BASE_PATH = process.env.WORKSPACE_PATH || process.env.LOOT_PATH ? 
+  path.join(process.env.LOOT_PATH || '/usr/share/sniper/loot', 'workspace') : 
+  '/usr/share/sniper/loot/workspace';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;

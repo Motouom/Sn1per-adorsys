@@ -3,7 +3,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Vulnerability, Port, Technology, HttpHeaders, DomainInfo, SSLInfo, DNSRecord, EmailConfig, Workspace, OSINTData, Credential, Note, Screenshot, ScanData, SeverityLevel } from '@/types';
 
-const LOOT_BASE_PATH = '/usr/share/sniper/loot/workspace';
+const LOOT_BASE_PATH = process.env.WORKSPACE_PATH || process.env.LOOT_PATH ? 
+  path.join(process.env.LOOT_PATH || '/usr/share/sniper/loot', 'workspace') : 
+  '/usr/share/sniper/loot/workspace';
 
 async function readFileIfExists(filePath: string): Promise<string | null> {
   try {

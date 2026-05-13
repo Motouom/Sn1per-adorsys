@@ -32,6 +32,8 @@ services:
   postgres:
     image: postgres:15
     container_name: sniper-postgres
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_USER: sniper
       POSTGRES_PASSWORD: sniper
