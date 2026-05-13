@@ -1,340 +1,286 @@
-[![Sn1per](https://sn1persecurity.com/wordpress/wp-content/uploads/2026/04/sn1per-professional-2026-hero-banner.png)](https://sn1persecurity.com)
+# Sn1per Security Platform
 
-[![GitHub release](https://img.shields.io/github/release/1N3/Sn1per.svg)](https://github.com/1N3/Sn1per/releases)
-[![License](https://img.shields.io/github/license/1N3/Sn1per.svg)](https://github.com/1N3/Sn1per/blob/master/LICENSE.md)
-[![GitHub issues](https://img.shields.io/github/issues/1N3/Sn1per.svg)](https://github.com/1N3/Sn1per/issues)
-[![Last commit](https://img.shields.io/github/last-commit/1N3/Sn1per.svg)](https://github.com/1N3/Sn1per/commits/master)
-[![Contributors](https://img.shields.io/github/contributors/1N3/Sn1per.svg)](https://github.com/1N3/Sn1per/graphs/contributors)
+Professional penetration testing framework with a modern web interface for comprehensive security assessments.
 
-[![GitHub Stars](https://img.shields.io/github/stars/1N3/Sn1per.svg?style=social&label=Stars)](https://github.com/1N3/Sn1per/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/1N3/Sn1per.svg?style=social&label=Forks)](https://github.com/1N3/Sn1per/network/members)
-[![GitHub Followers](https://img.shields.io/github/followers/1N3.svg?style=social&label=Follow)](https://github.com/1N3)
-[![Follow on Twitter](https://img.shields.io/twitter/follow/xer0dayz.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=xer0dayz)
+## Features
 
-[[Products](https://sn1persecurity.com/wordpress/)] [[Solutions](https://sn1persecurity.com/wordpress/use-cases/)] [[About](https://sn1persecurity.com/wordpress/about/)] [[News](https://sn1persecurity.com/wordpress/blog/)] [[Contact](https://sn1persecurity.com/wordpress/home/contact/)] [[Demo](https://sn1persecurity.com/wordpress/#video)] [[Pricing](https://sn1persecurity.com/wordpress/#pricing)] [[Shop](https://sn1persecurity.com/wordpress/shop/)]
-
-# Sn1per — The Offensive-Security Platform for Modern Teams
-
-> Recon, scanning, exploitation, and reporting in a single workspace — whether you're a solo pentester or a global SOC.
-
-> ## Sn1per Professional 2026 is here
->
-> The largest release since v10.0 — Docker-first deployment, Bootstrap 5 / Tabler UI, Workspace Navigator, Workspace + Host Reports with CSV / Excel / PDF export, JSON API v1.0, an Offcanvas Quick Commands sidebar with 13 panels, and expanded modules for ReverseAPK, MassPwn, Threat Intel, Nessus, and Burp.
->
-> [Read the release notes →](https://sn1persecurity.com/wordpress/sn1per-professional-2026-release/) · [View pricing →](https://sn1persecurity.com/wordpress/product/sn1per-professional-2026-license/)
-
-## Table of Contents
-
-- [About](#about-sn1per)
-- [What's New in 2026](#whats-new-in-2026)
-- [Editions & Pricing](#editions--pricing)
-- [Install](#install)
-- [Quick Start](#quick-start)
-- [Usage](#usage)
-- [Scan Modes](#scan-modes)
-- [Integrations](#integrations)
-- [Documentation & Help](#documentation--help)
-- [News & Releases](#news--releases)
-- [Community & Support](#community--support)
-- [Contributing](#contributing)
-- [License & Legal](#license--legal)
-
-## About Sn1per
-
-Sn1per is an offensive-security platform that consolidates reconnaissance, vulnerability scanning, exploitation, and reporting into a single workspace. Built by pentesters since 2015, it ships in three editions — a free open-source Community Edition (this repository), a paid Professional edition for individual operators and small teams, and an Enterprise edition for global SOCs — all backed by the same core scanning engine.
-
-Sn1per orchestrates 90+ third-party tools, ships with 600+ exploits and 10,000+ detections, and is used by 500+ teams worldwide. Battle-tested by the community. Built by pentesters, for pentesters.
-
-**500+** Teams · **90+** Integrations · **10,000+** Detections · **600+** Exploits · Trusted since **2015**
-
-## What's New in 2026
-
-[![Sn1per Pro 2026 Workspace Navigator](https://sn1persecurity.com/wordpress/wp-content/uploads/2026/04/sn1per-pro-2026-workspace-navigator.png)](https://sn1persecurity.com/wordpress/sn1per-professional-2026-release/)
-
-*Workspace Navigator — switch contexts across hosts, scopes, and engagements.*
-
-[![Sn1per Pro 2026 Dashboard](https://sn1persecurity.com/wordpress/wp-content/uploads/2026/04/sn1per-pro-2026-dashboard.png)](https://sn1persecurity.com/wordpress/sn1per-professional-2026-release/)
-
-*Dashboard — at-a-glance scan posture, top findings, and exploitable assets.*
-
-### Highlights
-
-- **Docker-first deployment** — same image, every distro
-- **Bootstrap 5 / Tabler UI** — refreshed responsive interface with light + dark mode
-- **Workspace Navigator** — fast workspace switching with state preservation
-- **Workspace & Host Reports** — CSV, Excel, and PDF export
-- **JSON API v1.0** — programmatic access for CI / SOAR / SIEM pipelines
-- **Offcanvas Quick Commands** — 13 panels, every common action one click away
-- **Expanded modules** — ReverseAPK, MassPwn, Threat Intel, Nessus, Burp Suite
-- **Maturing SC0PE framework** — more parsers, better noise reduction
-- **Hardened PHP library stack** — modern dependencies, audited components
-- **New CLI flags** — `-v` (verbose), `-db` (debug), `-rr` (remove resume files)
-
-> *"Sn1per Professional 2026 is the largest release since the v10.0 line."*
-
-[Read the full release notes →](https://sn1persecurity.com/wordpress/sn1per-professional-2026-release/)
-
-## Editions & Pricing
-
-The Community Edition is free and lives in this repository. The Professional and Enterprise editions add a Web UI, commercial integrations, and email support.
-
-| | **Sn1per Professional** | **Sn1per Enterprise** |
-|---|---|---|
-| **Price** | $984 / year (per seat) | Get a quote |
-| **Subscription** | 1 year | 1 year |
-| **— Included —** | | |
-| Web UI | Professional Web UI | Enterprise Web UI |
-| Scan Engine & UI Updates | ✓ | ✓ |
-| All Modules & Integrations | ✓ | ✓ |
-| On-Prem (Self Hosted) | ✓ | ✓ |
-| Email Support | 1 Year | 1 Year |
-| Improved Speed & Scalability | — | ✓ |
-| Cutting-Edge Features | — | ✓ |
-| **— Limits & Quotas —** | | |
-| Max Scans | Unlimited | Unlimited |
-| Max Assets / Workspace | 30 | Unlimited |
-| Max Workspaces | 5 | Unlimited |
-| Total Assets | 150 | 500+ |
-| Licensed Systems | 1 | 1 |
-
-[Buy a Sn1per Professional license →](https://sn1persecurity.com/wordpress/product/sn1per-professional-2026-license/) · [Get an Enterprise quote →](https://sn1persecurity.com/wordpress/)
-
-## Install
-
-### Linux (Kali / Ubuntu / Debian / Parrot)
-
-```bash
-git clone https://github.com/1N3/Sn1per.git
-cd Sn1per
-sudo bash install.sh
-```
-
-> Sn1per installs to `/usr/share/sniper` and requires root. Use `sudo bash install.sh force` to skip the confirmation prompt.
-
-### Docker
-
-[Sn1per on Docker Hub →](https://hub.docker.com/r/sn1persecurity/sn1per)
-
-#### Kali Linux base
-
-```bash
-sudo docker compose up
-sudo docker run --privileged -it sn1per-kali-linux /bin/bash
-```
-
-#### BlackArch base
-
-```bash
-sudo docker compose -f docker-compose-blackarch.yml up
-sudo docker run --privileged -it sn1per-blackarch /bin/bash
-```
-
-### AWS Marketplace (EC2 AMI)
-
-Subscribe via [AWS Marketplace](https://aws.amazon.com/marketplace/pp/prodview-rmloab6wnymno):
-
-1. Click **Continue to Subscribe**
-2. Click **Continue to Configuration**, choose region/instance type
-3. Click **Continue to Launch**
-4. SSH to the EC2 public IP — Sn1per is preinstalled
+- **Web Application Pentesting**: Full assessment including vulnerability scanning, technology detection, SSL analysis
+- **Network Pentesting**: Host discovery, port scanning, vulnerability detection
+- **Real-time Output**: Terminal output streamed live to the web UI
+- **Session Management**: Track all scans with full CRUD operations
+- **Comprehensive Reports**: Generate detailed vulnerability reports
 
 ## Quick Start
 
+### Step 1: Install Sniper
+
 ```bash
-sudo bash install.sh
-sniper -t example.com -m normal
+# Clone the repository
+git clone https://github.com/1N3/Sn1per.git
+cd Sn1per
+
+# Run the setup script (installs all dependencies)
+chmod +x setup.sh
+sudo ./setup.sh
 ```
 
-Results land in `/usr/share/sniper/loot/<workspace>/`. See [Usage](#usage) for more modes.
+### Step 2: Configure Sudo (REQUIRED for Real Scans)
+
+**Automatic method (recommended):**
+```bash
+chmod +x setup-sudo.sh
+sudo ./setup-sudo.sh
+```
+
+**Manual method:**
+```bash
+# Quick one-liner
+echo "$USER ALL=(ALL) NOPASSWD: /usr/share/sniper/sniper *" | sudo tee /etc/sudoers.d/sniper && sudo chmod 440 /etc/sudoers.d/sniper
+
+# Or using visudo
+sudo visudo
+# Add this line (replace 'your_username'):
+your_username ALL=(ALL) NOPASSWD: /usr/share/sniper/sniper *
+```
+
+### Step 3: Start the Web UI
+
+```bash
+cd /usr/share/sniper/ui/sniper-dashboard
+npm run dev -- -p 3004
+
+# Or use Docker
+docker-compose up -d
+```
+
+**Access:** http://localhost:3004
+
+## Sudo Configuration Details
+
+Sniper requires root access for security tools (nmap, nikto, etc.). Without sudo configuration, scans will run in **Simulation Mode**.
+
+### Verify Sudo is Working
+
+```bash
+# Should NOT ask for password
+sudo -n /usr/share/sniper/sniper -h
+```
+
+### Remove Sudo Configuration
+
+```bash
+sudo rm /etc/sudoers.d/sniper
+```
+
+### Troubleshooting
+
+If you see "sudo: a password is required":
+1. Run `sudo ./setup-sudo.sh`
+2. Log out and back in
+3. Verify with `sudo -n /usr/share/sniper/sniper -h`
+4. Or use **Debug/Simulation Mode** in the UI
+
+## System Requirements
+
+### Minimum
+- **OS**: Ubuntu 20.04+, Debian 11+, Kali Linux 2023+, or similar
+- **RAM**: 4GB
+- **Disk**: 20GB
+- **CPU**: 2 cores
+
+### Recommended
+- **OS**: Kali Linux 2024+
+- **RAM**: 8GB+
+- **Disk**: 50GB+
+- **CPU**: 4+ cores
+
+## Installed Tools
+
+The setup automatically installs these security tools:
+
+| Tool | Purpose |
+|------|---------|
+| nmap | Port scanning and service detection |
+| nikto | Web server scanner |
+| dirb/gobuster | Directory brute forcing |
+| hydra/medusa | Password brute forcing |
+| whatweb | Web technology fingerprinting |
+| wpscan | WordPress scanner |
+| metasploit-framework | Exploitation framework |
+| nuclei | Vulnerability scanner |
+| wafw00f | WAF detection |
 
 ## Usage
 
-```
-[*] NORMAL MODE
-sniper -t <TARGET>
+### Web Interface
 
-[*] NORMAL MODE + OSINT + RECON
-sniper -t <TARGET> -o -re
+1. Open `http://localhost:3004`
+2. Choose **Web App Pentesting** or **Network Pentesting**
+3. Enter target domain/IP
+4. Select scan mode and start
 
-[*] STEALTH MODE + OSINT + RECON
-sniper -t <TARGET> -m stealth -o -re
+### Command Line
 
-[*] DISCOVER MODE
-sniper -t <CIDR> -m discover -w <WORKSPACE_ALIAS>
+```bash
+# Basic web scan
+sudo sniper -t example.com
 
-[*] SCAN ONLY SPECIFIC PORT
-sniper -t <TARGET> -m port -p <portnum>
+# Normal mode (recon + vuln scanning)
+sudo sniper -t example.com -m normal
 
-[*] FULLPORTONLY SCAN MODE
-sniper -t <TARGET> -fp
+# Stealth mode (passive)
+sudo sniper -t example.com -m stealth
 
-[*] WEB MODE - PORT 80 + 443 ONLY!
-sniper -t <TARGET> -m web
+# Discovery mode (host discovery)
+sudo sniper -t 192.168.1.0/24 -m discover
 
-[*] HTTP WEB PORT MODE
-sniper -t <TARGET> -m webporthttp -p <port>
+# Full port scan
+sudo sniper -t example.com -m fullportonly
 
-[*] HTTPS WEB PORT MODE
-sniper -t <TARGET> -m webporthttps -p <port>
-
-[*] HTTP WEBSCAN MODE
-sniper -t <TARGET> -m webscan
-
-[*] ENABLE BRUTEFORCE
-sniper -t <TARGET> -b
-
-[*] AIRSTRIKE MODE
-sniper -f targets.txt -m airstrike
-
-[*] NUKE MODE WITH TARGET LIST, BRUTEFORCE ENABLED, FULLPORTSCAN ENABLED, OSINT ENABLED, RECON ENABLED, WORKSPACE & LOOT ENABLED
-sniper -f targets.txt -m nuke -w <WORKSPACE_ALIAS>
-
-[*] MASS PORT SCAN MODE
-sniper -f targets.txt -m massportscan
-
-[*] MASS WEB SCAN MODE
-sniper -f targets.txt -m massweb
-
-[*] MASS WEBSCAN SCAN MODE
-sniper -f targets.txt -m masswebscan
-
-[*] MASS VULN SCAN MODE
-sniper -f targets.txt -m massvulnscan
-
-[*] PORT SCAN MODE
-sniper -t <TARGET> -m port -p <PORT_NUM>
-
-[*] LIST WORKSPACES
-sniper --list
-
-[*] DELETE WORKSPACE
-sniper -w <WORKSPACE_ALIAS> -d
-
-[*] DELETE HOST FROM WORKSPACE
-sniper -w <WORKSPACE_ALIAS> -t <TARGET> -dh
-
-[*] GET SNIPER SCAN STATUS
-sniper --status
-
-[*] LOOT REIMPORT FUNCTION
-sniper -w <WORKSPACE_ALIAS> --reimport
-
-[*] LOOT REIMPORTALL FUNCTION
-sniper -w <WORKSPACE_ALIAS> --reimportall
-
-[*] LOOT RELOAD FUNCTION
-sniper -w <WORKSPACE_ALIAS> --reload
-
-[*] LOOT EXPORT FUNCTION
-sniper -w <WORKSPACE_ALIAS> --export
-
-[*] SCHEDULED SCANS
-sniper -w <WORKSPACE_ALIAS> -s daily|weekly|monthly
-
-[*] USE A CUSTOM CONFIG
-sniper -c /path/to/sniper.conf -t <TARGET> -w <WORKSPACE_ALIAS>
-
-[*] UPDATE SNIPER
-sniper -u|--update
-
-[*] VERBOSE OUTPUT (NEW IN 2026)
-sniper -t <TARGET> -m airstrike -v
-
-[*] DEBUG OUTPUT (NEW IN 2026)
-sniper -t <TARGET> -m normal -db
-
-[*] REMOVE RESUME FILES (NEW IN 2026)
-sniper -t <TARGET> -m airstrike -v -rr
+# Vulnerability scan
+sudo sniper -t example.com -m vulnscan
 ```
 
 ## Scan Modes
 
 | Mode | Description |
 |------|-------------|
-| `normal` | Active + passive scan of the target and its open ports |
-| `stealth` | Quick, mostly non-intrusive enumeration to avoid WAF / IPS |
-| `flyover` | Fast multi-threaded high-level scans of many hosts |
-| `airstrike` | Open-port enumeration + basic fingerprinting against a host file |
-| `nuke` | Full audit across all targets in a host file |
-| `discover` | Walks a CIDR and runs Sn1per on every live host |
-| `port` | Targeted scan of a specific port |
-| `fullportonly` | Full TCP port scan, results saved to XML |
-| `web` | Web app scan on `80/tcp` + `443/tcp` only |
-| `webporthttp` / `webporthttps` | Web app scan on a specific HTTP / HTTPS port |
-| `webscan` | Full HTTP + HTTPS web app scan via Burp Suite + Arachni |
-| `vulnscan` | OpenVAS vulnerability scan |
-| `mass*` | Multi-target variants of the above (`-f targets.txt`) |
+| normal | Full web application assessment |
+| stealth | Passive reconnaissance only |
+| discover | Network host discovery |
+| web | Web-only scanning |
+| webscan | Deep web vulnerability scan |
+| fullportonly | Full TCP/UDP port scan |
+| vulnscan | Vulnerability-focused scan |
 
-## Integrations
+## Configuration
 
-Sn1per ships with native integrations for **90+ tools and services**. Featured partners:
+### Sniper Configuration
 
-| Category | Integrations |
-|----------|--------------|
-| **Vulnerability scanners** | [Nessus](https://github.com/1N3/Sn1per/wiki/Nessus-Integration) · [OpenVAS](https://github.com/1N3/Sn1per/wiki/OpenVAS-Integration) · [GVM 21.x](https://github.com/1N3/Sn1per/wiki/GVM-21.x-Integration) · Nuclei |
-| **Web app testing** | [Burp Suite Pro](https://github.com/1N3/Sn1per/wiki/Burpsuite-Professional-2.x-Integration) · [OWASP ZAP](https://github.com/1N3/Sn1per/wiki/OWASP-ZAP-Integration) · [WPScan](https://github.com/1N3/Sn1per/wiki/WPScan-API-Integration) |
-| **Exploitation** | [Metasploit](https://github.com/1N3/Sn1per/wiki/Metasploit-Integration) |
-| **Reconnaissance** | [Shodan](https://github.com/1N3/Sn1per/wiki/Shodan-Integration) · [Censys](https://github.com/1N3/Sn1per/wiki/Censys-API-Integration) · [Hunter.io](https://github.com/1N3/Sn1per/wiki/Hunter.io-API-Integration) · VirusTotal · Nmap |
-| **AI / LLM** | OpenAI · Claude · Gemini |
-| **Notifications & DevOps** | [Slack](https://github.com/1N3/Sn1per/wiki/Slack-API-Integration) · [GitHub API](https://github.com/1N3/Sn1per/wiki/Github-API-Integration) |
+Edit `/usr/share/sniper/sniper.conf`:
 
-[Browse all integrations on the wiki →](https://github.com/1N3/Sn1per/wiki)
+```bash
+# API Keys (add your keys)
+SHODAN_API_KEY="your_key_here"
+CENSYS_APP_ID="your_id_here"
+CENSYS_API_SECRET="your_secret_here"
 
-## Documentation & Help
+# Enable/disable features
+NUCLEI="1"
+DIRSEARCH="1"
+WAFWOOF="1"
+# etc.
+```
 
-- [Getting Started](docs/getting-started.md)
-- [Installation](docs/installation.md)
-- [Configuration](docs/configuration.md)
-- [Usage](docs/usage.md)
-- [Architecture](docs/architecture.md)
-- [Integrations](docs/integrations.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Wiki — full reference](https://github.com/1N3/Sn1per/wiki)
-- [Official documentation](https://sn1persecurity.com/wordpress/documentation/)
+### UI Configuration
 
-### Configuration & Templates
+The UI settings are in `/usr/share/sniper/ui/sniper-dashboard/.env`:
 
-- [Plugins & Tools](https://github.com/1N3/Sn1per/wiki/Plugins-&-Tools)
-- [Scheduled Scans](https://github.com/1N3/Sn1per/wiki/Scheduled-Scans)
-- [Sn1per Configuration Options](https://github.com/1N3/Sn1per/wiki/Sn1per-Configuration-Options)
-- [Sn1per Configuration Templates](https://github.com/1N3/Sn1per/wiki/Sn1per-Configuration-Templates)
-- [Sc0pe Templates](https://github.com/1N3/Sn1per/wiki/Sc0pe-Templates)
+```env
+SNIPER_PATH=/usr/share/sniper/sniper
+LOOT_PATH=/usr/share/sniper/loot
+```
 
-## News & Releases
+## Troubleshooting
 
-- **[Sn1per Professional 2026 Released](https://sn1persecurity.com/wordpress/sn1per-professional-2026-release/)** — April 26, 2026
-- [Introducing SILENTCHAIN AI Community Edition v1.1.3](https://sn1persecurity.com/wordpress/introducing-silentchain-ai-community-edition-v1-1-3/) — February 11, 2026
-- [Sn1per SE v11.0 Now Available](https://sn1persecurity.com/wordpress/sn1per-se-v11-released/) — January 8, 2026
+### "sudo: a password is required"
 
-[All releases & blog posts →](https://sn1persecurity.com/wordpress/blog/)
+Configure sudoers as shown above in the Sudo Configuration section.
 
-## Community & Support
+### "python2: command not found"
 
-- **Bugs:** [Open an issue](https://github.com/1N3/Sn1per/issues)
-- **Twitter:** [@xer0dayz](https://twitter.com/xer0dayz)
-- **YouTube:** [Sn1per Security](https://www.youtube.com/c/Sn1perSecurity/videos)
-- **Email (Pro / Enterprise customers):** see your license email
+The setup script fixes this, but if you see it:
+
+```bash
+# Fix all python2 references
+sudo find /usr/share/sniper/modes -name "*.sh" -exec sed -i 's/python2 /python3 /g' {} \;
+```
+
+### "wafw00f: command not found"
+
+```bash
+pip3 install wafw00f --break-system-packages
+```
+
+### "npm: command not found"
+
+```bash
+# Install Node.js 20
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
+sudo apt-get install -y nodejs
+```
+
+### UI shows "Waiting for more output"
+
+Check if sniper can run:
+
+```bash
+sudo -n /usr/share/sniper/sniper -h
+```
+
+If it asks for password, fix sudoers. Otherwise, enable **Debug/Simulation Mode** in the UI.
+
+## Project Structure
+
+```
+Sn1per/
+├── sniper              # Main scanner script
+├── modes/              # Scan mode implementations
+├── templates/          # Vulnerability detection templates
+├── bin/                # Helper scripts
+├── wordlists/          # Wordlists for brute forcing
+├── conf/               # Configuration files
+├── loot/               # Scan results (mounted volume)
+├── ui/
+│   └── sniper-dashboard/   # Next.js web UI
+│       ├── src/
+│       │   ├── app/        # Pages and API routes
+│       │   ├── components/ # React components
+│       │   └── types/      # TypeScript definitions
+│       └── package.json
+├── Dockerfile          # Docker image definition
+├── docker-compose.yml  # Docker orchestration
+├── requirements.txt    # Python dependencies
+├── setup.sh           # Universal setup script
+└── README.md          # This file
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/scan` | POST | Start a new scan (SSE streaming) |
+| `/api/workspace` | GET | Get workspace data |
+| `/api/workspace` | GET ?workspace=X | Get specific workspace |
+| `/api/sessions` | GET ?action=list | List all scan sessions |
+| `/api/sessions` | POST action=create | Create new session |
+| `/api/sessions` | DELETE ?id=X | Delete session |
+| `/api/screenshot` | GET ?workspace=X&filename=Y | Get screenshot |
+
+## Security Notes
+
+- Never run scans against targets you don't own or have permission to test
+- The platform requires root/sudo access for security tools
+- API keys are stored in plaintext - protect your configuration
+- Session data is stored in `/tmp/sniper-sessions.json`
 
 ## Contributing
 
-Pull requests welcome. For substantial changes, open an issue first to discuss the design.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-- Mode scripts live in [`modes/`](modes/) — one bash file per scan mode
-- Test changes against a controlled target before opening a PR
-- Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format in [`CHANGELOG.md`](CHANGELOG.md)
+## License
 
-35 contributors and counting. Thank you.
+GNU General Public License v3.0
 
-## License & Legal
+## Support
 
-- **Code:** see [`LICENSE.md`](LICENSE.md) and [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md)
-- **Notices:** see [`NOTICE`](NOTICE)
-- **Trademark:** "Sn1per" and the Sn1per logo are trademarks of Sn1perSecurity LLC. Use in derivative works requires permission. Contact: [sn1persecurity.com](https://sn1persecurity.com)
+- Issues: https://github.com/1N3/Sn1per/issues
+- Documentation: https://github.com/1N3/Sn1per/wiki
+- Twitter: @xer0dayz
 
 ---
 
-## About Sn1perSecurity
-
-Sn1per is built and maintained by [Sn1perSecurity](https://sn1persecurity.com), a small team of pentesters shipping offensive-security tooling since 2015. We focus on the workflows we want to use ourselves — fast recon, ergonomic reporting, honest pricing, and a Community Edition that genuinely keeps up with the commercial editions. If that resonates, [say hi](https://twitter.com/xer0dayz).
-
-**Topics:** `penetration-testing` · `offensive-security` · `attack-surface-management` · `vulnerability-scanner` · `recon` · `osint` · `red-team` · `bug-bounty` · `security-tools`
+Made with by the Sn1per Security Team

@@ -1,14 +1,62 @@
 version: '3.9'
 
-x-logging: &default-logging
-  options:
-    max-size: "40m"
-    max-file: "10"
-  driver: json-file
-
 services:
-  kali-linux:
-    container_name: kali-linux
+  sniper:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: sniper-platform
+    hostname: sniper
+    privileged: true
+    ports:
+      - "3004:3004"     # Web UI
+      - "4444:4444"     # Selenium
+      - "8080:8080"     # Additional services
+    volumes:
+      - ./loot:/usr/share/sniper/loot
+      - ./conf:/usr/share/sniper/conf
+      - ./wordlists:/usr/share/sniper/wordlists
+      - sniper-data:/root
+      - sniper-sessions:/tmp/sniper-sessions
+    environment:
+      - TERM=xterm
+      - DISPLAY=:0
+      - SNIPER_WORKSPACE=/usr/share/sniper/loot/workspace
+    networks:
+      - sniper-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # Optional: Dedicated PostgreSQL for persistence
+  postgres:
+    image: postgres:15
+    container_name: sniper-postgres
+    environment:
+      POSTGRES_USER: sniper
+      POSTGRES_PASSWORD: sniper
+      POSTGRES_DB: sniper
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - sniper-network
+    restart: unless-stopped
+
+  # Optional: Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: sniper-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - sniper-network
+    restart: unless-stopped
+
+volumes:
+  sniper-data:
+  sniper-sessions:
+  postgres-data:
+
+networks:
+  sniper-network:
+    driver: bridge
