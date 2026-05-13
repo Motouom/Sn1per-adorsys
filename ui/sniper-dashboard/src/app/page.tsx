@@ -187,17 +187,99 @@ export default function Home() {
         : s
     ));
     
+    // Check if this was a simulation scan
+    const isSimulation = scanOutputs.some(o => o.simulation);
+    
+    // Parse vulnerabilities from scan outputs for display
+    const parsedVulns = parseVulnerabilitiesFromOutputs(scanOutputs);
+    
     setTimeout(() => {
       fetch(`/api/workspace?workspace=${encodeURIComponent(target)}`)
         .then(res => res.json())
         .then(res => {
           if (!res.error) {
-            setData(res as ScanData);
+            const scanData = res as ScanData;
+            
+            // If we parsed vulnerabilities from stream but workspace has fewer, use parsed ones
+            if (parsedVulns.length > 0 && parsedVulns.length > scanData.vulnerabilities.length) {
+              const vulnCounts = {
+                critical: parsedVulns.filter(v => v.severity === 'critical').length,
+                high: parsedVulns.filter(v => v.severity === 'high').length,
+                medium: parsedVulns.filter(v => v.severity === 'medium').length,
+                low: parsedVulns.filter(v => v.severity === 'low').length,
+                info: parsedVulns.filter(v => v.severity === 'info').length,
+                total: parsedVulns.length,
+              };
+              
+              setData({
+                ...scanData,
+                vulnerabilities: parsedVulns,
+                workspace: {
+                  ...scanData.workspace,
+                  vulnerabilities: vulnCounts,
+                  score: vulnCounts.critical * 10 + vulnCounts.high * 7 + vulnCounts.medium * 4 + vulnCounts.low * 1,
+                },
+              });
+            } else {
+              setData(scanData);
+            }
+          } else if (isSimulation && parsedVulns.length > 0) {
+            // No workspace files but we have parsed vulnerabilities from simulation
+            const vulnCounts = {
+              critical: parsedVulns.filter(v => v.severity === 'critical').length,
+              high: parsedVulns.filter(v => v.severity === 'high').length,
+              medium: parsedVulns.filter(v => v.severity === 'medium').length,
+              low: parsedVulns.filter(v => v.severity === 'low').length,
+              info: parsedVulns.filter(v => v.severity === 'info').length,
+              total: parsedVulns.length,
+            };
+            
+            setData({
+              workspace: {
+                name: target,
+                target: target,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                scanMode: 'normal',
+                status: 'completed',
+                score: vulnCounts.critical * 10 + vulnCounts.high * 7 + vulnCounts.medium * 4 + vulnCounts.low * 1,
+                vulnerabilities: vulnCounts,
+                ips: [],
+                ports: [],
+                domains: [target],
+                hostnames: [],
+                screenshotCount: 0,
+                credentialCount: 0,
+                noteCount: 0,
+              },
+              vulnerabilities: parsedVulns,
+              domainInfo: {
+                domain: target,
+                registrar: 'Unknown',
+                registrationDate: '',
+                expirationDate: '',
+                lastChangeDate: '',
+                nameservers: [],
+                status: [],
+                secureDNS: false,
+                registrarEmail: '',
+                registrarUrl: '',
+                registrarPhone: '',
+              },
+              sslInfo: { issuer: '', dnsNames: [], tlsVersions: [] },
+              dnsRecords: [],
+              emailConfig: { mxRecords: [], dkim: [], spf: '', dmarc: '' },
+              webInfo: { title: '', technologies: [], headers: [], cookies: [], forms: [], urls: [] },
+              osFingerprint: '',
+              rawOutput: '',
+              ip: '',
+              hostname: '',
+            } as ScanData);
           }
         })
         .catch(console.error);
     }, 2000);
-  }, [scanOutputs.length]);
+  }, [scanOutputs]);
 
   const handleClearScanOutputs = useCallback(() => {
     setScanOutputs([]);
@@ -595,4 +677,54 @@ function ReportsPanel({ workspace, onExport }: { workspace: string; onExport: ()
       </Card>
     </div>
   );
+}
+
+function parseVulnerabilitiesFromOutputs(outputs: ScanOutput[]): Vulnerability[] {
+  const vulns: Vulnerability[] = [];
+  const severityKeywords: Record<string, { keywords: string[], severity: 'critical' | 'high' | 'medium' | 'low' | 'info' }> = {
+    critical: { keywords: ['CRITICAL', 'CVE-2021-44228', 'Log4j', 'RCE', 'Remote Code Execution'], severity: 'critical' },
+    high: { keywords: ['HIGH', 'CVE-2022-22965', 'Spring4Shell', 'SQL Injection', 'XSS', 'Authentication Bypass'], severity: 'high' },
+    medium: { keywords: ['MEDIUM', 'IDOR', 'Information Disclosure', 'Session Management', 'CSRF'], severity: 'medium' },
+    low: { keywords: ['LOW', 'Clickjacking', 'Missing Header', 'Cookie'], severity: 'low' },
+    info: { keywords: ['INFO', 'detected', 'found', 'identified', 'enumeration'], severity: 'info' },
+  };
+
+  for (const output of outputs) {
+    if (output.type !== 'output' || !output.line) continue;
+    
+    const line = output.line;
+    
+    // Check for CVE patterns
+    const cveMatch = line.match(/(CVE-\d{4}-\d+)/);
+    const cvssMatch = line.match(/(\d+\.\d+)\s+(?:https:|CVSS)/);
+    
+    // Determine severity from content
+    let severity: 'critical' | 'high' | 'medium' | 'low' | 'info' = 'info';
+    for (const [level, config] of Object.entries(severityKeywords)) {
+      if (config.keywords.some(kw => line.toUpperCase().includes(kw.toUpperCase()))) {
+        severity = config.severity;
+        break;
+      }
+    }
+    
+    // Parse vulnerability from line patterns
+    if (line.includes('[+]') && (line.includes('CVE') || line.includes('vulnerability') || line.includes('VULNERABILITY'))) {
+      const titleMatch = line.match(/\[\+\]\s*(.+?)(?:\s*\(.*?\))?$/);
+      if (titleMatch) {
+        vulns.push({
+          id: `vuln-${vulns.length}`,
+          priority: severity === 'critical' ? 'P1' : severity === 'high' ? 'P2' : severity === 'medium' ? 'P3' : 'P5',
+          severity,
+          title: titleMatch[1].trim(),
+          target: '',
+          details: line,
+          cve: cveMatch?.[1] || '',
+          cvss: cvssMatch ? parseFloat(cvssMatch[1]) : 0,
+          reference: '',
+        });
+      }
+    }
+  }
+  
+  return vulns;
 }

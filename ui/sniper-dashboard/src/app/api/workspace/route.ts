@@ -21,21 +21,23 @@ function parseVulnerabilityReport(content: string): { vulns: Vulnerability[], co
   let score = 0;
 
   for (const line of lines) {
-    if (line.includes('Critical:')) {
+    // Parse summary counts
+    if (line.includes('Critical:') && line.match(/Critical:\s*\d+/)) {
       counts.critical = parseInt(line.split(':')[1].trim()) || 0;
-    } else if (line.includes('High:')) {
+    } else if (line.includes('High:') && line.match(/High:\s*\d+/)) {
       counts.high = parseInt(line.split(':')[1].trim()) || 0;
-    } else if (line.includes('Medium:')) {
+    } else if (line.includes('Medium:') && line.match(/Medium:\s*\d+/)) {
       counts.medium = parseInt(line.split(':')[1].trim()) || 0;
-    } else if (line.includes('Low:')) {
+    } else if (line.includes('Low:') && line.match(/Low:\s*\d+/)) {
       counts.low = parseInt(line.split(':')[1].trim()) || 0;
-    } else if (line.includes('Info:')) {
+    } else if (line.includes('Info:') && line.match(/Info:\s*\d+/)) {
       counts.info = parseInt(line.split(':')[1].trim()) || 0;
-    } else if (line.includes('Score:')) {
+    } else if (line.includes('Score:') && line.match(/Score:\s*\d+/)) {
       score = parseInt(line.split(':')[1].trim()) || 0;
     }
 
-    const match = line.match(/^(P\d+)\s+-\s+(\w+),\s+(.+?),\s+(.+?)(?:,\s+(.+))?$/);
+    // Parse vulnerability lines: P3 - MEDIUM, Title, Target, Details
+    const match = line.match(/^(P\d+)\s+-\s+(CRITICAL|HIGH|MEDIUM|LOW|INFO),\s+(.+?),\s+(.+?)(?:,\s*(.+))?$/);
     if (match) {
       const [, priority, severity, title, target, details] = match;
       const severityMap: Record<string, SeverityLevel> = {
@@ -74,6 +76,13 @@ function parseVulnerabilityReport(content: string): { vulns: Vulnerability[], co
         cvss,
         reference,
       });
+    }
+  }
+
+  // If counts are all zero but we parsed vulns, count them
+  if (counts.critical === 0 && counts.high === 0 && counts.medium === 0 && counts.low === 0 && counts.info === 0 && vulns.length > 0) {
+    for (const vuln of vulns) {
+      counts[vuln.severity]++;
     }
   }
 
@@ -510,7 +519,7 @@ export async function GET(request: Request) {
       score: parsedVulns.score,
       vulnerabilities: {
         ...parsedVulns.counts,
-        total: parsedVulns.vulns.length,
+        total: parsedVulns.counts.critical + parsedVulns.counts.high + parsedVulns.counts.medium + parsedVulns.counts.low + parsedVulns.counts.info,
       },
       ips: ip ? [ip] : [],
       ports,
