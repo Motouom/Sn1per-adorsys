@@ -65,6 +65,7 @@ install_system_packages() {
                 python3 python3-pip python3-venv \
                 nodejs npm \
                 jq xmlstarlet \
+                sslscan \
                 nmap nikto dirb gobuster \
                 hydra medusa \
                 whatweb wpscan \
@@ -122,8 +123,10 @@ install_nodejs() {
 install_python_deps() {
     echo -e "${YELLOW}[+] Installing Python dependencies...${NC}"
     
-    pip3 install --break-system-packages -r "$CURRENT_DIR/requirements.txt" 2>/dev/null || \
-    pip3 install -r "$CURRENT_DIR/requirements.txt"
+    pip3 install --break-system-packages -r "$CURRENT_DIR/requirements.txt"
+
+    pip3 install --break-system-packages wafw00f || true
+    ln -sf /usr/local/bin/wafw00f /usr/bin/wafw00f 2>/dev/null || true
 }
 
 # Setup sniper directory structure

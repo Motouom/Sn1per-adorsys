@@ -33,11 +33,15 @@ import {
 interface DashboardOverviewProps {
   workspace: Workspace;
   vulnerabilities: Vulnerability[];
+  isScanning?: boolean;
+  currentScanTarget?: string | null;
 }
 
-export function DashboardOverview({ workspace, vulnerabilities }: DashboardOverviewProps) {
+export function DashboardOverview({ workspace, vulnerabilities, isScanning, currentScanTarget }: DashboardOverviewProps) {
   const score = calculateRiskScore(workspace.vulnerabilities);
   const riskLevel = getRiskLevel(score);
+
+  const effectiveStatus = isScanning && currentScanTarget === workspace.target ? 'running' : workspace.status;
 
   const severityData = [
     { name: 'Critical', value: workspace.vulnerabilities.critical, color: '#ef4444' },
@@ -68,8 +72,8 @@ export function DashboardOverview({ workspace, vulnerabilities }: DashboardOverv
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Badge variant={workspace.status === 'completed' ? 'success' : 'warning'} size="lg">
-            {workspace.status}
+          <Badge variant={effectiveStatus === 'completed' ? 'success' : effectiveStatus === 'running' ? 'warning' : 'critical'} size="lg">
+            {effectiveStatus === 'running' ? 'Running' : effectiveStatus}
           </Badge>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Last scan</p>
@@ -102,8 +106,8 @@ export function DashboardOverview({ workspace, vulnerabilities }: DashboardOverv
         />
         <StatCard
           title="Attack Surface"
-          value={workspace.domains.length + workspace.hostnames.length}
-          subtitle={`${workspace.ips.length} IP(s)`}
+          value={workspace.subdomainCount || (workspace.domains.length + workspace.hostnames.length)}
+          subtitle={`${workspace.urlCount || 0} URL(s)`}
           icon={<Globe className="h-5 w-5" />}
           variant="info"
         />

@@ -129,6 +129,9 @@ export interface Workspace {
   screenshotCount?: number;
   credentialCount?: number;
   noteCount?: number;
+  urlCount?: number;
+  subdomainCount?: number;
+  emailCount?: number;
 }
 
 export interface WebInfo {

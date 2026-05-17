@@ -67,6 +67,37 @@ export function OSINTPanel({ data, target }: OSINTPanelProps) {
         ))}
       </div>
 
+      {data.subdomains && data.subdomains.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Link className="h-5 w-5 text-red-500" />
+              <CardTitle>Subdomains</CardTitle>
+            </div>
+            <Badge variant="info">{data.subdomains.length} subdomains</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {data.subdomains.map((sub, i) => (
+                <div
+                  key={`${sub}-${i}`}
+                  className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <span className="font-mono text-xs truncate">{sub}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.open(`https://${sub}`, '_blank')}
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {data.emails && data.emails.length > 0 && (
         <Card>
           <CardHeader>

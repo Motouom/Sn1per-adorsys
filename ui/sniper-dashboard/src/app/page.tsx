@@ -20,6 +20,7 @@ import { ExportPanel } from '@/components/dashboard/ExportPanel';
 import { ScanForm, ScanOutputPanel, ScanOutput, ScanStatus } from '@/components/dashboard/ScanForm';
 import { NetworkScanForm } from '@/components/dashboard/NetworkScanForm';
 import { ScanData, Vulnerability, Workspace, Port, Technology, HttpHeaders, DomainInfo, SSLInfo, DNSRecord, EmailConfig } from '@/types';
+import { calculateRiskScore } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -37,11 +38,17 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const [currentScanTarget, setCurrentScanTarget] = useState<string | null>(null);
   const [scanOutputs, setScanOutputs] = useState<ScanOutput[]>([]);
   const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null);
   const [sessions, setSessions] = useState<ScanSession[]>([]);
+  const [scanStartTime, setScanStartTime] = useState<string | null>(null);
+  const [scanEndTime, setScanEndTime] = useState<string | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<string>('00:00:00');
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scanStartRef = useRef<Date | null>(null);
 
   interface ScanSession {
     id: string;
@@ -106,12 +113,108 @@ export default function Home() {
     setLoading(true);
   };
 
+  const formatElapsedTime = (startDate: Date): string => {
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - startDate.getTime()) / 1000);
+    const hours = Math.floor(diff / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    const seconds = diff % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    if (isScanning && scanStartRef.current) {
+      timerIntervalRef.current = setInterval(() => {
+        if (scanStartRef.current) {
+          setElapsedTime(formatElapsedTime(scanStartRef.current));
+        }
+      }, 1000);
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [isScanning]);
+
   const handleBackToLanding = () => {
     setPentestMode('landing');
     setIsScanning(false);
+    setIsStopping(false);
     setCurrentScanTarget(null);
     setScanOutputs([]);
     setScanStatus(null);
+    setScanStartTime(null);
+    setScanEndTime(null);
+    setElapsedTime('00:00:00');
+    scanStartRef.current = null;
+  };
+
+  const handleStopScan = async () => {
+    if (!currentScanTarget) return;
+    
+    setIsStopping(true);
+    try {
+      const response = await fetch(`/api/scan?target=${encodeURIComponent(currentScanTarget)}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        setIsScanning(false);
+        setIsStopping(false);
+        setCurrentScanTarget(null);
+        // Add a message to output
+        handleScanOutput({
+          type: 'error',
+          line: 'Scan stopped by user',
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        const err = await response.json();
+        console.error('Failed to stop scan:', err.error);
+        setIsStopping(false);
+      }
+    } catch (err) {
+      console.error('Error stopping scan:', err);
+      setIsStopping(false);
+    }
+  };
+
+  const handleDeleteWorkspace = async (wsName: string) => {
+    if (!confirm(`Are you sure you want to delete workspace "${wsName}"? All data will be permanently removed.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/workspace?workspace=${encodeURIComponent(wsName)}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setWorkspaces(prev => prev.filter(w => w !== wsName));
+        setSessions(prev => prev.filter(s => s.target !== wsName));
+        if (workspace === wsName) {
+          if (workspaces.length > 1) {
+            const nextWs = workspaces.find(w => w !== wsName) || '';
+            setWorkspace(nextWs);
+          } else {
+            setPentestMode('landing');
+          }
+        }
+      } else {
+        const err = await response.json();
+        alert(`Failed to delete workspace: ${err.error}`);
+      }
+    } catch (err) {
+      console.error('Error deleting workspace:', err);
+      alert('Failed to delete workspace due to a network error');
+    }
   };
 
   const handleScanStart = useCallback((target: string, mode: string) => {
@@ -120,6 +223,11 @@ export default function Home() {
     setScanOutputs([]);
     setScanStatus(null);
     setWorkspace(target);
+    const startTime = new Date();
+    setScanStartTime(startTime.toISOString());
+    setScanEndTime(null);
+    setElapsedTime('00:00:00');
+    scanStartRef.current = startTime;
     
     console.log('%c══════════════════════════════════════════════════════════════', 'color: #ff4444');
     console.log(`%c[SNIPER SCAN STARTED]`, 'color: #00ff00; font-weight: bold; font-size: 14px');
@@ -130,7 +238,7 @@ export default function Home() {
       id: `session-${Date.now()}`,
       target,
       mode: pentestMode as 'webapp' | 'network',
-      startTime: new Date().toISOString(),
+      startTime: startTime.toISOString(),
       status: 'running',
       outputCount: 0,
     };
@@ -174,6 +282,9 @@ export default function Home() {
   const handleScanComplete = useCallback((target: string) => {
     setIsScanning(false);
     setCurrentScanTarget(null);
+    const endTime = new Date();
+    setScanEndTime(endTime.toISOString());
+    scanStartRef.current = null;
     setWorkspaces(prev => {
       if (!prev.includes(target)) {
         return [target, ...prev];
@@ -217,7 +328,7 @@ export default function Home() {
                 workspace: {
                   ...scanData.workspace,
                   vulnerabilities: vulnCounts,
-                  score: vulnCounts.critical * 10 + vulnCounts.high * 7 + vulnCounts.medium * 4 + vulnCounts.low * 1,
+                  score: calculateRiskScore(vulnCounts),
                 },
               });
             } else {
@@ -242,7 +353,7 @@ export default function Home() {
                 updatedAt: new Date().toISOString(),
                 scanMode: 'normal',
                 status: 'completed',
-                score: vulnCounts.critical * 10 + vulnCounts.high * 7 + vulnCounts.medium * 4 + vulnCounts.low * 1,
+                score: calculateRiskScore(vulnCounts),
                 vulnerabilities: vulnCounts,
                 ips: [],
                 ports: [],
@@ -313,10 +424,10 @@ export default function Home() {
         setActiveTab('vulnerabilities');
         break;
       case 'port':
-        setActiveTab('ports');
+        setActiveTab('network');
         break;
       case 'technology':
-        setActiveTab('technologies');
+        setActiveTab('web');
         break;
       case 'url':
         setActiveTab('web');
@@ -377,11 +488,10 @@ export default function Home() {
 
     switch (activeTab) {
       case 'dashboard':
-        return data ? <DashboardOverview workspace={data.workspace} vulnerabilities={data.vulnerabilities} /> : null;
+        return data ? <DashboardOverview workspace={data.workspace} vulnerabilities={data.vulnerabilities} isScanning={isScanning} currentScanTarget={currentScanTarget} /> : null;
       case 'vulnerabilities':
         return data ? <VulnerabilityPanel vulnerabilities={data.vulnerabilities} score={data.workspace.score} /> : null;
       case 'network':
-      case 'ports':
         return data ? (
           <NetworkPanel
             ports={data.workspace.ports}
@@ -391,7 +501,6 @@ export default function Home() {
           />
         ) : null;
       case 'web':
-      case 'technologies':
         return data ? (
           <WebPanel
             technologies={data.webInfo?.technologies || []}
@@ -419,7 +528,7 @@ export default function Home() {
       case 'reports':
         return <ReportsPanel workspace={workspace} onExport={() => setShowExport(true)} />;
       default:
-        return data ? <DashboardOverview workspace={data.workspace} vulnerabilities={data.vulnerabilities} /> : null;
+        return data ? <DashboardOverview workspace={data.workspace} vulnerabilities={data.vulnerabilities} isScanning={isScanning} currentScanTarget={currentScanTarget} /> : null;
     }
   };
 
@@ -468,15 +577,21 @@ export default function Home() {
               outputs={scanOutputs}
               status={scanStatus}
               isScanning={isScanning}
+              isStopping={isStopping}
+              onStop={handleStopScan}
               onClear={handleClearScanOutputs}
+              scanStartTime={scanStartTime}
+              scanEndTime={scanEndTime}
+              elapsedTime={elapsedTime}
             />
             
-            <SessionHistory sessions={sessions} onSelectSession={(s) => setWorkspace(s.target)} />
+            <SessionHistory sessions={sessions} onSelectSession={(s) => setWorkspace(s.target)} onDeleteSession={(id) => setSessions(prev => prev.filter(s => s.id !== id))} />
             
-            <WorkspaceSelector
-              workspace={workspace}
+            <WorkspaceSelector 
+              workspace={workspace} 
               workspaces={workspaces}
               onSelect={setWorkspace}
+              onDelete={handleDeleteWorkspace}
             />
             {renderContent()}
           </main>
@@ -490,9 +605,10 @@ interface WorkspaceSelectorProps {
   workspace: string;
   workspaces: string[];
   onSelect: (w: string) => void;
+  onDelete: (w: string) => void;
 }
 
-function WorkspaceSelector({ workspace, workspaces, onSelect }: WorkspaceSelectorProps) {
+function WorkspaceSelector({ workspace, workspaces, onSelect, onDelete }: WorkspaceSelectorProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -518,22 +634,33 @@ function WorkspaceSelector({ workspace, workspaces, onSelect }: WorkspaceSelecto
         </Button>
         
         {open && (
-          <div className="absolute top-full left-0 mt-1 w-[160px] sm:w-[200px] rounded-lg border border-border bg-card shadow-lg z-50">
+          <div className="absolute top-full left-0 mt-1 w-[200px] sm:w-[240px] rounded-lg border border-border bg-card shadow-lg z-50">
             <div className="p-1.5 sm:p-2">
               <p className="text-xs text-muted-foreground px-2 py-1">Workspaces</p>
               {workspaces.map((w) => (
-                <button
-                  key={w}
-                  onClick={() => {
-                    onSelect(w);
-                    setOpen(false);
-                  }}
-                  className={`w-full text-left px-2 py-1 sm:py-1.5 rounded text-xs sm:text-sm truncate ${
-                    w === workspace ? 'bg-red-500/10 text-red-500' : 'hover:bg-muted'
-                  }`}
-                >
-                  {w}
-                </button>
+                <div key={w} className="flex items-center group">
+                  <button
+                    onClick={() => {
+                      onSelect(w);
+                      setOpen(false);
+                    }}
+                    className={`flex-1 text-left px-2 py-1 sm:py-1.5 rounded text-xs sm:text-sm truncate ${
+                      w === workspace ? 'bg-red-500/10 text-red-500' : 'hover:bg-muted'
+                    }`}
+                  >
+                    {w}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(w);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-opacity"
+                    title="Delete workspace"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
               ))}
               {workspaces.length === 0 && (
                 <p className="text-xs text-muted-foreground px-2 py-2">No workspaces found</p>
@@ -568,9 +695,10 @@ interface SessionHistoryProps {
     outputCount: number;
   }>;
   onSelectSession: (session: any) => void;
+  onDeleteSession: (id: string) => void;
 }
 
-function SessionHistory({ sessions, onSelectSession }: SessionHistoryProps) {
+function SessionHistory({ sessions, onSelectSession, onDeleteSession }: SessionHistoryProps) {
   if (sessions.length === 0) return null;
 
   return (
@@ -587,8 +715,9 @@ function SessionHistory({ sessions, onSelectSession }: SessionHistoryProps) {
           {sessions.slice(0, 10).map((session) => (
             <div
               key={session.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between p-2 sm:p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
+              className="flex flex-col sm:flex-row sm:items-center justify-between p-2 sm:p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors group"
               onClick={() => onSelectSession(session)}
+              style={{ cursor: 'pointer' }}
             >
               <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-0">
                 <Badge variant={session.status === 'completed' ? 'success' : session.status === 'running' ? 'warning' : 'critical'} size="sm">
@@ -600,6 +729,16 @@ function SessionHistory({ sessions, onSelectSession }: SessionHistoryProps) {
               <div className="flex items-center gap-2 sm:gap-4 text-xs text-muted-foreground pl-7 sm:pl-0">
                 <span>{session.outputCount} outputs</span>
                 <span>{new Date(session.startTime).toLocaleTimeString()}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteSession(session.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-opacity"
+                  title="Delete session"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
             </div>
           ))}

@@ -61,99 +61,69 @@ export function NetworkPanel({ ports, ip, osFingerprint, hostname }: NetworkPane
             <Server className="h-5 w-5 text-red-500" />
             <CardTitle>Port Scan Results</CardTitle>
           </div>
-          <Badge variant="success">{ports.length} total ports</Badge>
+          <Badge variant={ports.length > 0 ? 'success' : 'warning'}>{ports.length > 0 ? `${ports.length} total ports` : 'No Data'}</Badge>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Port</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Protocol</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">State</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Service</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Banner</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ports.map((port, index) => (
-                  <tr
-                    key={`${port.number}-${port.protocol}-${index}`}
-                    className="border-b border-border/50 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{getServiceIcon(port.service)}</span>
-                        <span className="font-mono font-medium">{port.number}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge variant="default">{port.protocol.toUpperCase()}</Badge>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <Circle
-                          className={cn(
-                            'h-2 w-2 fill-current',
-                            getPortStateColor(port.state)
-                          )}
-                        />
-                        <span className={cn('capitalize', getPortStateColor(port.state))}>
-                          {port.state}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium">{port.service}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm text-muted-foreground font-mono truncate block max-w-xs">
-                        {port.banner || '-'}
-                      </span>
-                    </td>
+          {ports.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Port</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Protocol</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">State</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Service</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Banner</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Port Visualization</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-10 gap-2">
-            {Array.from({ length: 100 }, (_, i) => {
-              const portNum = i + 1;
-              const port = ports.find(p => p.number === portNum && p.protocol === 'tcp');
-              return (
-                <div
-                  key={portNum}
-                  className={cn(
-                    'h-8 rounded flex items-center justify-center text-xs font-mono transition-all',
-                    port?.state === 'open'
-                      ? 'bg-green-500/20 border border-green-500/50 text-green-500'
-                      : 'bg-muted/30 border border-border text-muted-foreground'
-                  )}
-                  title={port ? `Port ${portNum} - ${port.service} (${port.state})` : `Port ${portNum}`}
-                >
-                  {portNum}
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-6 mt-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded bg-green-500/20 border border-green-500/50" />
-              <span className="text-muted-foreground">Open</span>
+                </thead>
+                <tbody>
+                  {ports.map((port, index) => (
+                    <tr
+                      key={`${port.number}-${port.protocol}-${index}`}
+                      className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{getServiceIcon(port.service)}</span>
+                          <span className="font-mono font-medium">{port.number}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="default">{port.protocol.toUpperCase()}</Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <Circle
+                            className={cn(
+                              'h-2 w-2 fill-current',
+                              getPortStateColor(port.state)
+                            )}
+                          />
+                          <span className={cn('capitalize', getPortStateColor(port.state))}>
+                            {port.state}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium">{port.service}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm text-muted-foreground font-mono truncate block max-w-xs">
+                          {port.banner || '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded bg-muted/30 border border-border" />
-              <span className="text-muted-foreground">Closed/Filtered</span>
+          ) : (
+            <div className="text-center py-8">
+              <Server className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No port scan data available</p>
+              <p className="text-xs text-muted-foreground mt-1">Run a scan with port scanning to see results</p>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

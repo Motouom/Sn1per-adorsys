@@ -258,10 +258,15 @@ interface ScanOutputPanelProps {
   outputs: ScanOutput[];
   status: ScanStatus | null;
   isScanning: boolean;
+  isStopping?: boolean;
+  onStop?: () => void;
   onClear: () => void;
+  scanStartTime?: string | null;
+  scanEndTime?: string | null;
+  elapsedTime?: string;
 }
 
-export function ScanOutputPanel({ outputs, status, isScanning, onClear }: ScanOutputPanelProps) {
+export function ScanOutputPanel({ outputs, status, isScanning, isStopping, onStop, onClear, scanStartTime, scanEndTime, elapsedTime = '00:00:00' }: ScanOutputPanelProps) {
   const [autoScroll, setAutoScroll] = useState(true);
   const [filter, setFilter] = useState<'all' | 'error' | 'status'>('all');
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -346,10 +351,11 @@ export function ScanOutputPanel({ outputs, status, isScanning, onClear }: ScanOu
     vulnscan: 'Vulnerability Scan',
     osint: 'OSINT Gathering',
     os_fingerprint: 'OS Fingerprinting',
+    ssl: 'SSL/TLS Analysis',
+    dns: 'DNS Enumeration',
     complete: 'Scan Complete',
     error: 'Error',
     init: 'Initializing',
-    dns: 'DNS Enumeration',
   };
 
   return (
@@ -377,6 +383,26 @@ export function ScanOutputPanel({ outputs, status, isScanning, onClear }: ScanOu
             <option value="status">Status</option>
             <option value="error">Errors</option>
           </select>
+          {isScanning && onStop && (
+            <Button 
+              variant="danger" 
+              size="sm" 
+              onClick={onStop}
+              disabled={isStopping}
+            >
+              {isStopping ? (
+                <>
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-1 sm:mr-2" />
+                  Stopping...
+                </>
+              ) : (
+                <>
+                  <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Stop Scan
+                </>
+              )}
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={onClear}>
             <X className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline ml-1">Clear</span>
@@ -384,6 +410,25 @@ export function ScanOutputPanel({ outputs, status, isScanning, onClear }: ScanOu
         </div>
       </CardHeader>
       <CardContent>
+        {scanStartTime && (
+          <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Start:</span>
+              <span className="font-mono font-medium">{new Date(scanStartTime).toLocaleTimeString()}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Elapsed:</span>
+              <span className={`font-mono font-bold ${isScanning ? 'text-yellow-400' : 'text-green-400'}`}>{elapsedTime}</span>
+            </div>
+            {scanEndTime && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground">End:</span>
+                <span className="font-mono font-medium">{new Date(scanEndTime).toLocaleTimeString()}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {status && status.progress > 0 && status.progress < 100 && (
           <div className="mb-3 sm:mb-4">
             <div className="flex justify-between text-xs sm:text-sm mb-1">

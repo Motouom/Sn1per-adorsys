@@ -43,30 +43,38 @@ export function WebPanel({ technologies, headers, title, urls, forms }: WebPanel
             <Layers className="h-5 w-5 text-red-500" />
             <CardTitle>Detected Technologies</CardTitle>
           </div>
-          <Badge variant="success">{technologies.length} technologies</Badge>
+          <Badge variant={technologies.length > 0 ? 'success' : 'warning'}>{technologies.length} technologies</Badge>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {technologies.map((tech, index) => (
-              <div
-                key={`${tech.name}-${index}`}
-                className="flex flex-col p-4 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <TechIcon name={tech.name} />
-                  <span className="font-medium">{tech.name}</span>
+          {technologies.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {technologies.map((tech, index) => (
+                <div
+                  key={`${tech.name}-${index}`}
+                  className="flex flex-col p-4 rounded-lg border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <TechIcon name={tech.name} />
+                    <span className="font-medium">{tech.name}</span>
+                  </div>
+                  {tech.version && (
+                    <Badge variant="default" size="sm" className="self-start">
+                      v{tech.version}
+                    </Badge>
+                  )}
+                  {tech.category && (
+                    <span className="text-xs text-muted-foreground mt-2">{tech.category}</span>
+                  )}
                 </div>
-                {tech.version && (
-                  <Badge variant="default" size="sm" className="self-start">
-                    v{tech.version}
-                  </Badge>
-                )}
-                {tech.category && (
-                  <span className="text-xs text-muted-foreground mt-2">{tech.category}</span>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Layers className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No technologies detected yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Technologies will appear here after a scan detects them</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -79,17 +87,25 @@ export function WebPanel({ technologies, headers, title, urls, forms }: WebPanel
           <Badge variant="info">{headers.length} headers</Badge>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {headers.map((header, index) => (
-              <div
-                key={`${header.name}-${index}`}
-                className="flex items-start gap-4 p-3 rounded-lg bg-muted/30 font-mono text-sm"
-              >
-                <span className="text-red-500 font-semibold min-w-[150px]">{header.name}:</span>
-                <span className="text-muted-foreground break-all">{header.value}</span>
-              </div>
-            ))}
-          </div>
+          {headers.length > 0 ? (
+            <div className="space-y-2">
+              {headers.map((header, index) => (
+                <div
+                  key={`${header.name}-${index}`}
+                  className="flex items-start gap-4 p-3 rounded-lg bg-muted/30 font-mono text-sm"
+                >
+                  <span className="text-red-500 font-semibold min-w-[150px]">{header.name}:</span>
+                  <span className="text-muted-foreground break-all">{header.value}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Code className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No HTTP headers captured</p>
+              <p className="text-xs text-muted-foreground mt-1">Headers will appear here after a web scan</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

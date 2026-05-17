@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     jq \
     xmlstarlet \
+    sslscan \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20
@@ -62,7 +63,8 @@ RUN pip3 install --break-system-packages \
     python-nmap \
     shodan \
     censys \
-    virustotal-python
+    virustotal-python \
+    && ln -sf /usr/local/bin/wafw00f /usr/bin/wafw00f || true
 
 # Install sniper dependencies
 RUN cd ${INSTALL_DIR} && ./install.sh --docker || true
